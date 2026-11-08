@@ -2,6 +2,12 @@
 
 All notable changes to the "translator" extension are documented in this file.
 
+## [1.3.0]
+
+- **View Translation** at the top of Markdown and plain text files: the whole file translated and shown beside it as a preview, Markdown rendered with its images; the file itself is not changed
+- The action that replaces a selection is called **Translate with Replacement**, has the icon of the side bar and goes away with the selection, also when another file is opened
+- Fixed in Markdown: an image was torn apart by its `!`, and a sentence could end inside a link or code
+
 ## [1.2.0]
 
 - **Translate** among the actions at the top of a text file while text is selected: the selection is replaced by its translation into the language chosen in the side bar

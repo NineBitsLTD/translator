@@ -2,7 +2,7 @@
   "name": "translator",
   "displayName": "Translator",
   "description": "%description%",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "publisher": "ninebits",
   "license": "MIT",
   "icon": "resources/icon.png",
@@ -26,6 +26,10 @@
   "extensionKind": [
     "ui",
     "workspace"
+  ],
+  "activationEvents": [
+    "onFileSystem:translator-preview",
+    "onStartupFinished"
   ],
   "main": "dist/extension.cjs",
   "l10n": "./l10n",
@@ -63,7 +67,10 @@
         "command": "translator.translateInPlace",
         "title": "%cmd.translateInPlace%",
         "category": "Translator",
-        "icon": "$(globe)"
+        "icon": {
+          "light": "resources/translator-light.svg",
+          "dark": "resources/translator-dark.svg"
+        }
       },
       {
         "command": "translator.translateClipboard",
@@ -74,6 +81,15 @@
         "command": "translator.translateFile",
         "title": "%cmd.translateFile%",
         "category": "Translator"
+      },
+      {
+        "command": "translator.previewFile",
+        "title": "%cmd.previewFile%",
+        "category": "Translator",
+        "icon": {
+          "light": "resources/translator-preview-light.svg",
+          "dark": "resources/translator-preview-dark.svg"
+        }
       },
       {
         "command": "translator.translate",
@@ -90,7 +106,12 @@
       "editor/title": [
         {
           "command": "translator.translateInPlace",
-          "when": "editorHasSelection && !editorReadonly && activeEditor =~ /^workbench\\.editors\\.(files\\.textFileEditor|textResourceEditor)$/",
+          "when": "translator.hasSelection && editorHasSelection && !editorReadonly && activeEditor =~ /^workbench\\.editors\\.(files\\.textFileEditor|textResourceEditor)$/",
+          "group": "navigation@-1008"
+        },
+        {
+          "command": "translator.previewFile",
+          "when": "editorLangId =~ /^(markdown|plaintext)$/ && resourceScheme != translator-preview && activeEditor =~ /^workbench\\.editors\\.(files\\.textFileEditor|textResourceEditor)$/",
           "group": "navigation@-1007"
         }
       ],
@@ -118,6 +139,10 @@
         {
           "command": "translator.downloadModel",
           "when": "false"
+        },
+        {
+          "command": "translator.previewFile",
+          "when": "editorLangId =~ /^(markdown|plaintext)$/ && resourceScheme != translator-preview"
         },
         {
           "command": "translator.translateSelection",

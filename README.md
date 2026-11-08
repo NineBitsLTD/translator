@@ -5,7 +5,7 @@ A Visual Studio Code extension that translates text on your device with ONNX mod
 ## Features
 
 - **Side bar** — languages (or Auto), the text and its translation; **Selection** and **Clipboard** take the text and translate it; **Copy**, **Replace selection**. With the extension TTS / STT Aloud (`ninebits.tts-stt-aloud`) installed, buttons read the text or its translation aloud (at the lowest priority among the windows of VS Code) and record speech to translate (STT must be on there).
-- **Editor commands** — **Translate Selection**, **Replace Selection with Translation** (also in the context menu, and as **Translate** among the actions at the top of a text file while text is selected), **Translate Clipboard**, **Translate File into a New Editor**. They translate into the language chosen in the side bar.
+- **Editor commands** — **Translate Selection**, **Replace Selection with Translation** (also in the context menu, and as **Translate with Replacement** among the actions at the top of a text file while text is selected), **Translate Clipboard**, **Translate File into a New Editor**, and **View Translation** at the top of Markdown and plain text files: the whole file translated and shown beside it as a preview, the file itself is not changed. They translate into the language chosen in the side bar.
 - **Models** — download them in the side bar, with progress: **Opus-MT** (about 110 MB, one direction: en→ru, ru→en, en→uk…, 65 pairs) or **M2M100** (about 610 MB, every pair of 100 languages), or use a model folder on your disk. A pair with no direct model goes through English when both halves are installed. The check box next to a model turns it on or off for translating.
 - **Keeps what should not be translated** — line breaks and indentation, code in backticks, addresses, file names and identifiers; in Markdown also code blocks, headings and lists, links and emphasis.
 - **For other extensions** — `vscode.extensions.getExtension('ninebits.translator').activate()` gives `translate(textOrTexts, { from, to, markdown })`, `detectLanguage(text)`, `canTranslate(from, to)`; the command `translator.translate` does the same.
@@ -32,7 +32,7 @@ Then press **F5** with a "Run Extension" configuration (`"type": "extensionHost"
 ```bash
 npm install
 npm run pack       # packs translator-<platform>-<arch>-<version>.vsix for this machine
-code --install-extension translator-darwin-arm64-1.2.0.vsix
+code --install-extension translator-darwin-arm64-1.3.0.vsix
 ```
 
 ## License

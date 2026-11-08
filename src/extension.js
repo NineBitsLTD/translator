@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { SpeechExtension } from './components/SpeechExtension';
 import { TextCommands } from './components/TextCommands';
 import { Translation } from './components/Translation';
+import { TranslationPreview } from './components/TranslationPreview';
 import { TranslationModels } from './components/TranslationModels';
 import { TranslatorPanel } from './components/TranslatorPanel';
 import { TranslatorSettings } from './components/TranslatorSettings';
@@ -37,7 +38,8 @@ export function activate(context) {
 	const translation = new Translation(settings, models, engine);
 	const speech = new SpeechExtension();
 	const panel = new TranslatorPanel(context, settings, translation, speech);
-	context.subscriptions.push(settings, models, speech, settingsChanged, panel.register(), new TextCommands(translation, panel).register(), { dispose: () => engine.release() });
+	const preview = new TranslationPreview();
+	context.subscriptions.push(settings, models, speech, settingsChanged, panel.register(), preview.register(), new TextCommands(translation, panel, preview).register(), { dispose: () => engine.release() });
 	// For other extensions: begins downloading a model of the catalog, gives why it does not ('' : it began)
 	context.subscriptions.push(vscode.commands.registerCommand('translator.downloadModel', key => models.download(String(key ?? ''))));
 	return {

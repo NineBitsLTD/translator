@@ -50,6 +50,7 @@
   "The models that translate from {0} to {1} are turned off: check them in the list of models.": "Модели для перевода {0} → {1} выключены: отметьте их в списке моделей.",
   "The text is in {0} already.": "Текст уже на языке: {0}.",
   "There is no model {0}.": "Модели {0} нет в каталоге.",
+  "This translation is no longer available: open it again with View Translation.": "Этот перевод больше недоступен: откройте его снова командой «Просмотреть перевод».",
   "This folder is not a model the translator can use: {0}": "В этой папке нет подходящей модели: {0}",
   "This model is in the list already.": "Эта модель уже в списке.",
   "Translate": "Перевести",

@@ -2,30 +2,46 @@ import * as vscode from 'vscode';
 
 /**
  * The commands on text: a selection into the panel or replaced by its translation, the clipboard
- * into the panel, a whole file into a new editor, and `translator.translate` for other extensions.
+ * into the panel, a whole file into a new editor or shown as a preview, and `translator.translate`
+ * for other extensions.
  */
 export class TextCommands {
 
     /**
      * @param {import('./Translation').Translation} translation
      * @param {import('./TranslatorPanel').TranslatorPanel} panel
+     * @param {import('./TranslationPreview').TranslationPreview} preview
      */
-    constructor(translation, panel) {
+    constructor(translation, panel, preview) {
         this._translation = translation;
         this._panel = panel;
+        this._preview = preview;
+        this._hasSelection = false;
     }
 
     /** @returns {vscode.Disposable} */
     register() {
         const command = (id, run) => vscode.commands.registerCommand(id, run);
+        this._publishSelection();
         return vscode.Disposable.from(
+            vscode.window.onDidChangeTextEditorSelection(() => this._publishSelection()),
+            vscode.window.onDidChangeActiveTextEditor(() => this._publishSelection()),
             command('translator.translateSelection', () => this._selection()),
             command('translator.replaceSelection', () => this._replace()),
             command('translator.translateInPlace', () => this._replace()),
             command('translator.translateClipboard', () => this._clipboard()),
             command('translator.translateFile', () => this._file()),
+            command('translator.previewFile', () => this._previewFile()),
             command('translator.translate', (texts, options) => this._forExtensions(texts, options)),
         );
+    }
+
+    /** Sets `translator.hasSelection`: in the editor title `editorHasSelection` stays true after another file is opened. */
+    _publishSelection() {
+        const hasSelection = !!vscode.window.activeTextEditor?.selections.some(selection => !selection.isEmpty);
+        if (hasSelection === this._hasSelection) return;
+        this._hasSelection = hasSelection;
+        vscode.commands.executeCommand('setContext', 'translator.hasSelection', hasSelection);
     }
 
     /** @returns {{ editor: vscode.TextEditor, selections: vscode.Selection[] } | null} the active editor with text selected */
@@ -100,17 +116,31 @@ export class TextCommands {
         await vscode.workspace.applyEdit(edit);
     }
 
-    async _file() {
+    /**
+     * @returns {Promise<{ document: vscode.TextDocument, text: string, language: string } | null>} the
+     *   file of the active editor with its translation (null: none, cancelled or failed)
+     */
+    async _translatedFile() {
         const document = vscode.window.activeTextEditor?.document;
         if (!document) {
             vscode.window.showInformationMessage(vscode.l10n.t('Open the file to translate.'));
-            return;
+            return null;
         }
         const markdown = document.languageId === 'markdown';
         const result = await this._withProgress(vscode.l10n.t('Translating the file'), options => this._translation.translate([document.getText()], { ...options, markdown }));
-        if (!result) return;
-        const opened = await vscode.workspace.openTextDocument({ language: document.languageId, content: result.texts[0] });
+        return result ? { document, text: result.texts[0], language: result.to } : null;
+    }
+
+    async _file() {
+        const translated = await this._translatedFile();
+        if (!translated) return;
+        const opened = await vscode.workspace.openTextDocument({ language: translated.document.languageId, content: translated.text });
         await vscode.window.showTextDocument(opened, { preview: false });
+    }
+
+    async _previewFile() {
+        const translated = await this._translatedFile();
+        if (translated) await this._preview.show(translated.document, translated.text, translated.language);
     }
 
     /**

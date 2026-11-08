@@ -7,15 +7,41 @@ const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const BLOCK_PREFIX = /^(\s*(?:#{1,6}\s+|>+\s?|(?:[-*+]|\d{1,9}[.)])\s+(?:\[[ xX]\]\s+)?)+)/;
 const LITERAL_LINE = /^(?: {4}|\t|\s*<\/?[a-zA-Z!]|\s*\[[^\]]+\]:\s|\s*(?:[-*_]\s*){3,}$|\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$)/;
 
+/** What a sentence of Markdown cannot end inside: code in backticks, a link, an image (`!` is no end there). */
+const UNBREAKABLE = /`+[^`\n]+`+|!?\[[^\]\n]*\]\([^)\n]*\)/g;
+
+/**
+ * @param {string} text
+ * @param {string} language
+ * @param {boolean} markdown
+ * @returns {string[]} its sentences
+ */
+function sentencesOf(text, language, markdown) {
+    const segmenter = new Intl.Segmenter(language, { granularity: 'sentence' });
+    const sentences = [...segmenter.segment(text)].map(({ segment }) => segment);
+    if (!markdown) return sentences;
+    const spans = [...text.matchAll(UNBREAKABLE)].map(found => [found.index, found.index + found[0].length]);
+    const joined = [];
+    let at = 0;
+    let goesOn = false;
+    for (const sentence of sentences) {
+        if (goesOn) joined[joined.length - 1] += sentence;
+        else joined.push(sentence);
+        at += sentence.length;
+        goesOn = spans.some(([start, end]) => start < at && at < end);
+    }
+    return joined;
+}
+
 /**
  * Splits a part of a text into sentences; whitespace around them and parts without letters stay as they are.
  * @param {string} text
  * @param {string} language
  * @param {Segment[]} out
+ * @param {boolean} [markdown]
  */
-function pushSentences(text, language, out) {
-    const segmenter = new Intl.Segmenter(language, { granularity: 'sentence' });
-    for (const { segment } of segmenter.segment(text)) {
+function pushSentences(text, language, out, markdown = false) {
+    for (const segment of sentencesOf(text, language, markdown)) {
         const [, before, body, after] = segment.match(/^(\s*)([\s\S]*?)(\s*)$/);
         if (before) out.push({ text: before, translate: false });
         if (body) out.push({ text: body, translate: HAS_LETTERS.test(body) });
@@ -45,7 +71,7 @@ function mergeLiterals(segments) {
 function pushTableRow(line, language, out) {
     for (const part of line.split(/(\|)/)) {
         if (part === '|') out.push({ text: part, translate: false });
-        else pushSentences(part, language, out);
+        else pushSentences(part, language, out, true);
     }
 }
 
@@ -63,7 +89,7 @@ function pushMarkdown(parts, language, out) {
     let paragraphEnd = '';
     const flush = () => {
         if (!paragraph.length) return;
-        pushSentences(paragraph.join(' '), language, out);
+        pushSentences(paragraph.join(' '), language, out, true);
         paragraph = [];
         out.push({ text: paragraphEnd, translate: false });
         paragraphEnd = '';

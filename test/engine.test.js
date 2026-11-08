@@ -36,6 +36,15 @@ test('Markdown: code, signs and tables stay, a wrapped paragraph is one', () => 
     for (const kept of ['# ', '- ', '  1. ', '> ', '```js\nconst notTranslated = 1;\n```', '    indented code', '| --- | --- |', '[ref]: https://example.com']) assert.ok(out.includes(kept), kept);
 });
 
+test('Markdown: a sentence does not end inside an image, a link or code', () => {
+    const sentences = text => toTranslate(segmentText(text, { markdown: true }));
+    assert.deepEqual(sentences('![logo](./logo.png)'), ['![logo](./logo.png)']);
+    assert.deepEqual(sentences('Look at ![the picture](img/a.png) above. Next one.'), ['Look at ![the picture](img/a.png) above.', 'Next one.']);
+    assert.deepEqual(sentences('See [Hello! World](a.md) now. Run `a. B` too.'), ['See [Hello! World](a.md) now.', 'Run `a. B` too.']);
+    assert.deepEqual(sentences('| ![a](b.png) | Text. |'), ['![a](b.png)', 'Text.']);
+    assert.deepEqual(toTranslate(segmentText('Wow! Next one.')), ['Wow!', 'Next one.']);
+});
+
 test('an unclosed code fence keeps the rest of the text', () => {
     assert.deepEqual(toTranslate(segmentText('Before.\n```\ncode words\nmore words', { markdown: true })), ['Before.']);
 });
