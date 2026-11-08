@@ -4,6 +4,7 @@
   "view.panel": "Перевод",
   "cmd.translateSelection": "Перевести выделенное",
   "cmd.replaceSelection": "Заменить выделенное переводом",
+  "cmd.translateInPlace": "Перевести",
   "cmd.translateClipboard": "Перевести буфер обмена",
   "cmd.translateFile": "Перевести файл в новый редактор",
   "cmd.translate": "Перевести текст",

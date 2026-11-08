@@ -2,7 +2,7 @@
   "name": "translator",
   "displayName": "Translator",
   "description": "%description%",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publisher": "ninebits",
   "license": "MIT",
   "icon": "resources/icon.png",
@@ -60,6 +60,12 @@
         "category": "Translator"
       },
       {
+        "command": "translator.translateInPlace",
+        "title": "%cmd.translateInPlace%",
+        "category": "Translator",
+        "icon": "$(globe)"
+      },
+      {
         "command": "translator.translateClipboard",
         "title": "%cmd.translateClipboard%",
         "category": "Translator"
@@ -81,6 +87,13 @@
       }
     ],
     "menus": {
+      "editor/title": [
+        {
+          "command": "translator.translateInPlace",
+          "when": "editorHasSelection && !editorReadonly && activeEditor =~ /^workbench\\.editors\\.(files\\.textFileEditor|textResourceEditor)$/",
+          "group": "navigation@-1007"
+        }
+      ],
       "editor/context": [
         {
           "command": "translator.translateSelection",
@@ -96,6 +109,10 @@
       "commandPalette": [
         {
           "command": "translator.translate",
+          "when": "false"
+        },
+        {
+          "command": "translator.translateInPlace",
           "when": "false"
         },
         {

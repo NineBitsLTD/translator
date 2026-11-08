@@ -21,6 +21,7 @@ export class TextCommands {
         return vscode.Disposable.from(
             command('translator.translateSelection', () => this._selection()),
             command('translator.replaceSelection', () => this._replace()),
+            command('translator.translateInPlace', () => this._replace()),
             command('translator.translateClipboard', () => this._clipboard()),
             command('translator.translateFile', () => this._file()),
             command('translator.translate', (texts, options) => this._forExtensions(texts, options)),
@@ -83,11 +84,20 @@ export class TextCommands {
     async _replace() {
         const selected = TextCommands._selected();
         if (!selected) return;
-        const { editor, selections } = selected;
-        const markdown = editor.document.languageId === 'markdown';
-        const result = await this._withProgress(vscode.l10n.t('Translating the selection'), options => this._translation.translate(selections.map(selection => editor.document.getText(selection)), { ...options, markdown }));
+        const { editor: { document }, selections } = selected;
+        const { version } = document;
+        const markdown = document.languageId === 'markdown';
+        const result = await this._withProgress(vscode.l10n.t('Translating the selection'), options => this._translation.translate(selections.map(selection => document.getText(selection)), { ...options, markdown }));
         if (!result) return;
-        await editor.edit(edit => selections.forEach((selection, index) => edit.replace(selection, result.texts[index])));
+        // The selection is of the text as it was: edited meanwhile, it would replace something else
+        if (document.isClosed || document.version !== version) {
+            vscode.window.showWarningMessage(vscode.l10n.t('The file changed while it was being translated: the selection is left as it is.'));
+            return;
+        }
+        // Not through the editor: it may have been hidden by another tab meanwhile
+        const edit = new vscode.WorkspaceEdit();
+        selections.forEach((selection, index) => edit.replace(document.uri, selection, result.texts[index]));
+        await vscode.workspace.applyEdit(edit);
     }
 
     async _file() {

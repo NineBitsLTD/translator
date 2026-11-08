@@ -121,7 +121,8 @@ export class TranslatorView {
             node.hidden = !found;
             node.disabled = this._recording;
             node.title = speaking ? s.stopSpeaking : s.speak;
-            node.replaceChildren(icon(speaking ? 'debug-stop' : 'unmute'));
+            node.classList.toggle('tr__button--speaking', speaking);
+            node.replaceChildren(icon('unmute'));
         }
         this._record.hidden = !found;
         this._record.title = this._recording ? s.stopRecording : s.record;

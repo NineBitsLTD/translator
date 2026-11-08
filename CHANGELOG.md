@@ -2,6 +2,12 @@
 
 All notable changes to the "translator" extension are documented in this file.
 
+## [1.2.0]
+
+- **Translate** among the actions at the top of a text file while text is selected: the selection is replaced by its translation into the language chosen in the side bar
+- A selection is left as it is when the file changed while it was being translated
+- The button that reads aloud is a speaker, struck through while it speaks; icon buttons have no frame
+
 ## [1.1.1]
 
 - The repository of the extension in its manifest

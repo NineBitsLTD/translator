@@ -45,6 +45,7 @@
   "Text to translate (⌘Enter or Ctrl+Enter translates)": "Текст для перевода (⌘Enter или Ctrl+Enter — перевести)",
   "The clipboard has no text.": "В буфере обмена нет текста.",
   "The extension TTS / STT Aloud is not installed.": "Расширение TTS / STT Aloud не установлено.",
+  "The file changed while it was being translated: the selection is left as it is.": "Файл изменился во время перевода: выделенный текст оставлен как есть.",
   "The model {0} could not be downloaded: {1}": "Не удалось скачать модель {0}: {1}",
   "The models that translate from {0} to {1} are turned off: check them in the list of models.": "Модели для перевода {0} → {1} выключены: отметьте их в списке моделей.",
   "The text is in {0} already.": "Текст уже на языке: {0}.",

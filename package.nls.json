@@ -4,6 +4,7 @@
   "view.panel": "Translate",
   "cmd.translateSelection": "Translate Selection",
   "cmd.replaceSelection": "Replace Selection with Translation",
+  "cmd.translateInPlace": "Translate",
   "cmd.translateClipboard": "Translate Clipboard",
   "cmd.translateFile": "Translate File into a New Editor",
   "cmd.translate": "Translate Text",
