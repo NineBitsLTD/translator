@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Translator — test stand</title>
+<link href="/dist/codicons/codicon.css" rel="stylesheet">
+<link href="/dist/css/panel.css" rel="stylesheet">
+<style>
+  :root { --vscode-foreground: #cccccc; --vscode-descriptionForeground: #9d9d9d; --vscode-errorForeground: #f85149; --vscode-font-family: -apple-system, sans-serif; --vscode-font-size: 13px;
+    --vscode-input-background: #313131; --vscode-input-foreground: #cccccc; --vscode-input-border: #3c3c3c; --vscode-dropdown-background: #313131; --vscode-dropdown-foreground: #cccccc; --vscode-dropdown-border: #3c3c3c;
+    --vscode-button-background: #0078d4; --vscode-button-foreground: #fff; --vscode-button-hoverBackground: #026ec1; --vscode-button-secondaryBackground: #313131; --vscode-button-secondaryForeground: #ccc; --vscode-button-secondaryHoverBackground: #3c3c3c;
+    --vscode-focusBorder: #0078d4; --vscode-list-hoverBackground: #2a2d2e; --vscode-textLink-foreground: #3794ff; --vscode-panel-border: #2b2b2b; --vscode-editorWidget-background: #202020; --vscode-input-placeholderForeground: #989898; --vscode-list-activeSelectionBackground: #04395e; --vscode-list-activeSelectionForeground: #fff; }
+  body { background: #181818; width: 320px; }
+</style>
+</head>
+<body>
+<div class="tr"></div>
+<script>
+// A fake extension host: the state of two models, a download, a pair without a model.
+window.harness = { sent: [] };
+const reply = m => window.postMessage(m, '*');
+const names = new Intl.DisplayNames(['ru'], { type: 'language' });
+const languages = ['ru', 'uk', 'en', 'de', 'es', 'fr', 'zh'].map(code => ({ code, name: names.of(code) }));
+const MB = 1048576;
+const state = { type: 'state', from: 'auto', to: 'ru', languages,
+  models: [
+    { folder: '/m/opus-mt-en-ru', name: 'opus-mt-en-ru', family: 'marian', sources: ['en'], targets: ['ru'], size: 115 * MB, stored: true, ready: true, active: true, error: '', license: 'Apache-2.0' },
+    { folder: '/m/m2m100_418M', name: 'm2m100_418M', family: 'm2m_100', sources: new Array(100).fill('x'), targets: [], size: 609 * MB, stored: true, ready: true, active: false, error: '', license: 'MIT' },
+    { folder: '/old/model', name: 'model', family: '', sources: [], targets: [], size: 0, stored: false, ready: false, active: true, error: 'There is no config.json in the folder.', license: '' },
+  ],
+  catalog: [
+    { key: 'm2m100_418M', family: 'm2m_100', sources: [], targets: [], languageCount: 100, size: 609 * MB, license: 'MIT', added: true },
+    { key: 'opus-mt-en-ru', family: 'marian', sources: ['en'], targets: ['ru'], languageCount: 1, size: 110 * MB, license: 'Apache-2.0', added: true },
+    { key: 'opus-mt-ru-en', family: 'marian', sources: ['ru'], targets: ['en'], languageCount: 1, size: 110 * MB, license: 'CC-BY-4.0', added: false },
+    { key: 'opus-mt-en-uk', family: 'marian', sources: ['en'], targets: ['uk'], languageCount: 1, size: 109 * MB, license: 'Apache-2.0', added: true },
+    { key: 'opus-mt-uk-en', family: 'marian', sources: ['uk'], targets: ['en'], languageCount: 1, size: 109 * MB, license: 'Apache-2.0', added: false },
+    { key: 'opus-mt-de-en', family: 'marian', sources: ['de'], targets: ['en'], languageCount: 1, size: 104 * MB, license: 'Apache-2.0', added: false },
+  ],
+  pending: { 'opus-mt-en-uk': { done: 40 * MB, total: 109 * MB } },
+  speech: true };
+window.harness.state = state;
+// Requests left unanswered until the test calls finishSpeech() or a stop message comes.
+const speech = {};
+const answer = (kind, result) => {
+  if (speech[kind]) reply({ type: 'hostReply', requestId: speech[kind], result });
+  delete speech[kind];
+};
+window.harness.finishSpeech = (kind, result) => answer(kind, result);
+window.acquireVsCodeApi = () => ({
+  postMessage(m) {
+    window.harness.sent.push(m);
+    if (m.type === 'ready') fetch('/strings.json').then(r => r.json()).then((strings) => { reply({ type: 'init', strings }); reply(state); });
+    else if (m.type === 'translate') {
+      reply({ type: 'translating', done: 1, total: 2 });
+      setTimeout(() => {
+        if (m.to === 'de') reply({ type: 'hostReply', requestId: m.requestId, result: { error: 'Пока нет модели для перевода: английский → немецкий.', from: 'en', to: 'de', downloads: [{ keys: ['opus-mt-en-de'], size: 109 * MB }, { keys: ['m2m100_418M'], size: 609 * MB }] } });
+        else reply({ type: 'hostReply', requestId: m.requestId, result: { text: 'Сервер продолжает работать.', from: 'en', to: m.to, route: ['opus-mt-en-ru'] } });
+      }, 30);
+    } else if (m.type === 'selection') reply({ type: 'hostReply', requestId: m.requestId, result: { text: '', markdown: false } });
+    else if (m.type === 'clipboard') reply({ type: 'hostReply', requestId: m.requestId, result: { text: 'From the clipboard.' } });
+    else if (m.type === 'replace') reply({ type: 'hostReply', requestId: m.requestId, result: { error: 'Выделите в редакторе текст, который нужно заменить.' } });
+    else if (m.type === 'browseFolder') reply({ type: 'hostReply', requestId: m.requestId, result: '/m/my-model' });
+    else if (m.type === 'addModel') reply({ type: 'hostReply', requestId: m.requestId, result: m.folder === '/m/my-model' ? 'В этой папке нет подходящей модели.' : '' });
+    else if (m.type === 'speak') { answer('speak', {}); speech.speak = m.requestId; }
+    else if (m.type === 'stopSpeaking') answer('speak', {});
+    else if (m.type === 'record') { answer('speak', {}); speech.record = m.requestId; }
+    else if (m.type === 'stopRecording') answer('record', { text: 'Сказанная фраза' });
+  },
+  getState() {}, setState() {},
+});
+</script>
+<script src="/dist/js/panel.js"></script>
+</body>
+</html>

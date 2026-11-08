@@ -1,0 +1,211 @@
+{
+  "name": "translator",
+  "displayName": "Translator",
+  "description": "%description%",
+  "version": "1.1.0",
+  "publisher": "ninebits",
+  "license": "MIT",
+  "icon": "resources/icon.png",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "translate",
+    "translation",
+    "onnx",
+    "offline"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "main": "dist/extension.cjs",
+  "l10n": "./l10n",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "translator",
+          "title": "%view.title%",
+          "icon": "resources/translator.svg"
+        }
+      ]
+    },
+    "views": {
+      "translator": [
+        {
+          "type": "webview",
+          "id": "translator.panel",
+          "name": "%view.panel%"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "translator.translateSelection",
+        "title": "%cmd.translateSelection%",
+        "category": "Translator"
+      },
+      {
+        "command": "translator.replaceSelection",
+        "title": "%cmd.replaceSelection%",
+        "category": "Translator"
+      },
+      {
+        "command": "translator.translateClipboard",
+        "title": "%cmd.translateClipboard%",
+        "category": "Translator"
+      },
+      {
+        "command": "translator.translateFile",
+        "title": "%cmd.translateFile%",
+        "category": "Translator"
+      },
+      {
+        "command": "translator.translate",
+        "title": "%cmd.translate%",
+        "category": "Translator"
+      },
+      {
+        "command": "translator.downloadModel",
+        "title": "%cmd.downloadModel%",
+        "category": "Translator"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "translator.translateSelection",
+          "when": "editorHasSelection",
+          "group": "translator@1"
+        },
+        {
+          "command": "translator.replaceSelection",
+          "when": "editorHasSelection && !editorReadonly",
+          "group": "translator@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "translator.translate",
+          "when": "false"
+        },
+        {
+          "command": "translator.downloadModel",
+          "when": "false"
+        },
+        {
+          "command": "translator.translateSelection",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "translator.replaceSelection",
+          "when": "editorHasSelection && !editorReadonly"
+        },
+        {
+          "command": "translator.translateFile",
+          "when": "editorIsOpen"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Translator",
+      "properties": {
+        "translator.sourceLanguage": {
+          "type": "string",
+          "default": "auto",
+          "scope": "application",
+          "order": 1,
+          "description": "%cfg.sourceLanguage%"
+        },
+        "translator.targetLanguage": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "order": 2,
+          "description": "%cfg.targetLanguage%"
+        },
+        "translator.alternateLanguage": {
+          "type": "string",
+          "default": "en",
+          "scope": "application",
+          "order": 3,
+          "description": "%cfg.alternateLanguage%"
+        },
+        "translator.beams": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 8,
+          "scope": "application",
+          "order": 4,
+          "description": "%cfg.beams%"
+        },
+        "translator.idleMinutes": {
+          "type": "number",
+          "default": 5,
+          "minimum": 0,
+          "scope": "application",
+          "order": 5,
+          "description": "%cfg.idleMinutes%"
+        },
+        "translator.models": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "application",
+          "order": 6,
+          "description": "%cfg.models%"
+        },
+        "translator.inactiveModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "application",
+          "order": 7,
+          "description": "%cfg.inactiveModels%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "pack": "node scripts/pack.mjs",
+    "clean": "rm -rf dist",
+    "clean:css-temp": "rm -f src/scss/*.css*",
+    "copy:codicons": "mkdir -p dist/codicons && cp node_modules/@vscode/codicons/dist/codicon.css node_modules/@vscode/codicons/dist/codicon.ttf dist/codicons/",
+    "copy:runtime": "node scripts/copy-runtime.mjs",
+    "compile:sass": "sass --no-source-map src/scss:src/scss",
+    "build:js": "esbuild src/extension.js --bundle --minify --outfile=dist/extension.cjs --external:vscode --platform=node --format=cjs",
+    "build:js-webview": "esbuild src/panel.js --bundle --minify --outdir=dist/js",
+    "build:css": "npm run compile:sass && esbuild src/scss/*.css --bundle --minify --outdir=dist/css --loader:.css=css && npm run clean:css-temp",
+    "build": "npm run clean && npm run build:js && npm run build:js-webview && npm run build:css && npm run copy:codicons && npm run copy:runtime",
+    "watch:js": "esbuild src/extension.js --bundle --outfile=dist/extension.cjs --external:vscode --platform=node --format=cjs --watch",
+    "watch:js-webview": "esbuild src/panel.js --bundle --outdir=dist/js --watch",
+    "watch:css": "sass --watch --no-source-map src/scss:dist/css",
+    "watch": "npm run build && concurrently 'npm:watch:*'",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@vscode/codicons": "^0.0.44",
+    "onnxruntime-node": "1.31.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.x",
+    "@types/vscode": "^1.107.0",
+    "@vscode/vsce": "^4.0.0",
+    "concurrently": "^9.2.1",
+    "esbuild": "^0.27.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.0.0",
+    "sass": "^1.96.0"
+  }
+}

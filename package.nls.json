@@ -1,0 +1,18 @@
+{
+  "description": "Translate text on your device with ONNX models (Opus-MT, M2M100): a side bar, editor commands and an API for other extensions.",
+  "view.title": "Translator",
+  "view.panel": "Translate",
+  "cmd.translateSelection": "Translate Selection",
+  "cmd.replaceSelection": "Replace Selection with Translation",
+  "cmd.translateClipboard": "Translate Clipboard",
+  "cmd.translateFile": "Translate File into a New Editor",
+  "cmd.translate": "Translate Text",
+  "cfg.sourceLanguage": "The language to translate from: a code, or auto to tell it by the letters of the text.",
+  "cfg.targetLanguage": "The language to translate into (a code). Empty: the language of VS Code.",
+  "cfg.alternateLanguage": "The language to translate into when the text is in the target language already.",
+  "cfg.beams": "How many variants the search keeps (1 is fastest; 0: what each model is made with).",
+  "cfg.idleMinutes": "Models are freed from memory after this many minutes without work (0: never).",
+  "cfg.models": "The folders of the translation models, downloaded in the side bar or chosen on the disk.",
+  "cfg.inactiveModels": "The folders of the models that translations do not use: those unchecked in the side bar.",
+  "cmd.downloadModel": "Download a Translation Model"
+}
