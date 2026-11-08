@@ -32,7 +32,7 @@ Then press **F5** with a "Run Extension" configuration (`"type": "extensionHost"
 ```bash
 npm install
 npm run pack       # packs translator-<platform>-<arch>-<version>.vsix for this machine
-code --install-extension translator-darwin-arm64-1.1.0.vsix
+code --install-extension translator-darwin-arm64-1.1.1.vsix
 ```
 
 ## License

@@ -2,6 +2,10 @@
 
 All notable changes to the "translator" extension are documented in this file.
 
+## [1.1.1]
+
+- The repository of the extension in its manifest
+
 ## [1.1.0]
 
 - With the extension TTS / STT Aloud: buttons in the side bar read the text or its translation aloud and record speech to translate

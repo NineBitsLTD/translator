@@ -2,7 +2,7 @@
   "name": "translator",
   "displayName": "Translator",
   "description": "%description%",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "publisher": "ninebits",
   "license": "MIT",
   "icon": "resources/icon.png",
